@@ -72,12 +72,14 @@
         </div>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/11.0.0/markdown-it.min.js"></script>
         <script>
         jQuery(function($) {
 
 
             // The api URL
-            var apiBaseUrl = "http://bulk-data-tester.smarthealthit.org/api/tests";
+            // var apiBaseUrl = "http://bulk-data-tester.smarthealthit.org/api/tests";
+            var apiBaseUrl = "http://0.0.0.0:3002/api/tests";
 
             // Test status to icon className map
             var statusClasses = {
@@ -128,6 +130,12 @@
                 }
             };
 
+            var md = new markdownit();
+
+            function renderMd(str) {
+                return md.render(str).replace(/<a\s+href="([^"]*)">/g, '<a target="_blank" href="$1">');
+            }
+
             // Renders an array of test nodes (recursive)
             function renderGroup(items) {
                 var list = $("<ul>");
@@ -140,7 +148,9 @@
                     
                     if (item.description) {
                         div.append(
-                            $('<div class="small text-muted"/>').html(item.description)
+                            $('<div class="small text-muted"/>').html(
+                                renderMd(item.description || "*No description provided*")
+                            )
                         );
                     }
 
@@ -189,7 +199,7 @@
 
                     if (result.warnings.length) {
                         $.each(result.warnings, function(y, w) {
-                            div.append($('<div class="add warning"/>').html(w));
+                            div.append($('<div class="add warning"/>').html(renderMd(w)));
                         })
                     }
                 });

@@ -78,8 +78,10 @@
 
 
             // The api URL
-            // var apiBaseUrl = "http://bulk-data-tester.smarthealthit.org/api/tests";
-            var apiBaseUrl = "http://0.0.0.0:3002/api/tests";
+            var apiBaseUrl = "http://bulk-data-tester.smarthealthit.org/api/tests";
+            // var apiBaseUrl = "http://0.0.0.0:3002/api/tests";
+
+            var apiVersion = 1.5;
 
             // Test status to icon className map
             var statusClasses = {
@@ -92,41 +94,41 @@
 
             // Reference Bulk Data Server --------------------------------------
             var REFERENCE_SERVER = {
-                baseURL              : "https://bulk-data.smarthealthit.org/eyJlcnIiOiIiLCJwYWdlIjoxMDAsImR1ciI6MTAsInRsdCI6MTUsIm0iOjF9/fhir",
-                tokenEndpoint        : "https://bulk-data.smarthealthit.org/auth/token",
-                clientId             : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InJlZ2lzdHJhdGlvbi10b2tlbiJ9.eyJqd2tzIjp7ImtleXMiOlt7Imt0eSI6IkVDIiwiY3J2IjoiUC0zODQiLCJ4IjoiTTFyM0dVZDBZRHBXbHF0ZjRHYXJPcmN3SWoyRnhDQlFmQnN4QmlLUzdmTTl1Z1pVUlBialp6YjZ5bDZOSlFETCIsInkiOiJmUWVvRm9wTTc0VjlXSWRYR0NHX3NtVm56c2N4eGlXM0hNQnNjd2tiUlVRSWxqMmFrTTM2WVB4ZDF2Z2M5WWVJIiwia2V5X29wcyI6WyJ2ZXJpZnkiXSwiZXh0Ijp0cnVlLCJraWQiOiJmMjkzOTdlZjQ0NmQ1YzE0ODBhZGViYmNiNTk5MTBiMyIsImFsZyI6IkVTMzg0In0seyJrdHkiOiJFQyIsImNydiI6IlAtMzg0IiwiZCI6IkxfOGh3VXlsbndoYWpNUGRqdkV0MTUtd0ZLbldDVEJ2WG1kSm5waTkySHN4TFVYWEwzS1ZidDlVYndFRjN2S0giLCJ4IjoiTTFyM0dVZDBZRHBXbHF0ZjRHYXJPcmN3SWoyRnhDQlFmQnN4QmlLUzdmTTl1Z1pVUlBialp6YjZ5bDZOSlFETCIsInkiOiJmUWVvRm9wTTc0VjlXSWRYR0NHX3NtVm56c2N4eGlXM0hNQnNjd2tiUlVRSWxqMmFrTTM2WVB4ZDF2Z2M5WWVJIiwia2V5X29wcyI6WyJzaWduIl0sImV4dCI6dHJ1ZSwia2lkIjoiZjI5Mzk3ZWY0NDZkNWMxNDgwYWRlYmJjYjU5OTEwYjMiLCJhbGciOiJFUzM4NCJ9XX0sImFjY2Vzc1Rva2Vuc0V4cGlyZUluIjoxNSwiaWF0IjoxNTU3NTAwNDIwfQ.2NJEarwScjRZZaDlpL1ixLxhWdfWFo_EFcaKJfL1oHE",
-                systemExportEndpoint : "/$export",
-                patientExportEndpoint: "/Patient/$export",
-                groupExportEndpoint  : "/Group/6/$export",
-                fastestResource      : "ImagingStudy",
-                requiresAuth         : false,
-                sinceParam           : "_since",
-                jwksUrlAuth          : true,
-                jwksAuth             : true,
-                publicKey: {
-                    "kty": "EC",
-                    "crv": "P-384",
-                    "x": "M1r3GUd0YDpWlqtf4GarOrcwIj2FxCBQfBsxBiKS7fM9ugZURPbjZzb6yl6NJQDL",
-                    "y": "fQeoFopM74V9WIdXGCG_smVnzscxxiW3HMBscwkbRUQIlj2akM36YPxd1vgc9YeI",
-                    "key_ops": [
-                        "verify"
-                    ],
-                    "ext": true,
-                    "kid": "f29397ef446d5c1480adebbcb59910b3",
-                    "alg": "ES384"
-                },
-                privateKey: {
-                    "kty": "EC",
-                    "crv": "P-384",
-                    "d": "L_8hwUylnwhajMPdjvEt15-wFKnWCTBvXmdJnpi92HsxLUXXL3KVbt9UbwEF3vKH",
-                    "x": "M1r3GUd0YDpWlqtf4GarOrcwIj2FxCBQfBsxBiKS7fM9ugZURPbjZzb6yl6NJQDL",
-                    "y": "fQeoFopM74V9WIdXGCG_smVnzscxxiW3HMBscwkbRUQIlj2akM36YPxd1vgc9YeI",
-                    "key_ops": [
-                        "sign"
-                    ],
-                    "ext": true,
-                    "kid": "f29397ef446d5c1480adebbcb59910b3",
-                    "alg": "ES384"
+                baseURL        : "https://bulk-data.smarthealthit.org/eyJlcnIiOiIiLCJwYWdlIjoxMDAsImR1ciI6MTAsInRsdCI6MTUsIm0iOjF9/fhir",
+                tokenEndpoint  : "https://bulk-data.smarthealthit.org/auth/token",
+                clientId       : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InJlZ2lzdHJhdGlvbi10b2tlbiJ9.eyJqd2tzX3VybCI6Imh0dHBzOi8vYnVsay1kYXRhLXRlc3Rlci5zbWFydGhlYWx0aGl0Lm9yZy9qd2tzIiwiYWNjZXNzVG9rZW5zRXhwaXJlSW4iOjE1LCJpYXQiOjE2MTAzNzkyODl9.YLql1N304s_ACebERRdpcGFhuu1fHWN70XgRtO8lwVk",
+                fastestResource: "ImagingStudy",
+                scope          : "system/*.read",
+                authType       : "backend-services",
+                groupId        : "ff7dc35f-79e9-47a0-af22-475cf301a085", // Blue Cross Blue Shield
+                strictSSL      : false,
+                requiresAuth   : false,
+                jwksAuth       : true,
+                jwksUrlAuth    : true,
+                jwks: {
+                    "keys": [
+                        {
+                            "kty": "EC",
+                            "crv": "P-384",
+                            "x": "M1r3GUd0YDpWlqtf4GarOrcwIj2FxCBQfBsxBiKS7fM9ugZURPbjZzb6yl6NJQDL",
+                            "y": "fQeoFopM74V9WIdXGCG_smVnzscxxiW3HMBscwkbRUQIlj2akM36YPxd1vgc9YeI",
+                            "key_ops": ["verify"],
+                            "ext": true,
+                            "kid": "f29397ef446d5c1480adebbcb59910b3",
+                            "alg": "ES384"
+                        },
+                        {
+                            "kty": "EC",
+                            "crv": "P-384",
+                            "d": "L_8hwUylnwhajMPdjvEt15-wFKnWCTBvXmdJnpi92HsxLUXXL3KVbt9UbwEF3vKH",
+                            "x": "M1r3GUd0YDpWlqtf4GarOrcwIj2FxCBQfBsxBiKS7fM9ugZURPbjZzb6yl6NJQDL",
+                            "y": "fQeoFopM74V9WIdXGCG_smVnzscxxiW3HMBscwkbRUQIlj2akM36YPxd1vgc9YeI",
+                            "key_ops": ["sign"],
+                            "ext": true,
+                            "kid": "f29397ef446d5c1480adebbcb59910b3",
+                            "alg": "ES384"
+                        }
+                    ]
                 }
             };
 
@@ -140,6 +142,7 @@
             function renderGroup(items) {
                 var list = $("<ul>");
                 $.each(items, function(i, item) {
+                    if (+item.version > apiVersion || +item.maxVersion < apiVersion) return;
                     var li = $('<li>').attr("data-path", item.path);
                     var div = $("<div/>")
                         .append('<i class="icon fas fa-flask text-muted"/>')
@@ -171,9 +174,10 @@
                         "Content-type": "application/json"
                     },
                     data: JSON.stringify({
-                        "format": "json",
-                        "path"  : path,
+                        format: "json",
+                        path  : path,
                         settings: {
+                            version: 1.5,
                             ...REFERENCE_SERVER,
                             id: Date.now()
                         }
@@ -204,8 +208,9 @@
                     }
                 });
             }
+
             // Load the list of tests and render it
-            $.ajax(apiBaseUrl).then(function(data) {
+            $.ajax(apiBaseUrl + "?version=" + apiVersion).then(function(data) {
                 renderGroup(data.children).appendTo("#root");
             });
 

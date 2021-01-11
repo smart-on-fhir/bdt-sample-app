@@ -170,6 +170,7 @@
                 return $.ajax({
                     method: "POST",
                     url: apiBaseUrl,
+                    timeout: 1000 * 60 * 30, // 30 min
                     headers: {
                         "Content-type": "application/json"
                     },

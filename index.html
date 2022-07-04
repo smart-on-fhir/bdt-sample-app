@@ -7,33 +7,35 @@
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
         <title>Sample App</title>
         <style>
-            li, ul {
-                list-style-type: none;
+            body {
+                font-size: 15px;
+                font-family: Arial, Helvetica, sans-serif;
+                line-height: 1.6;
             }
-            li > div {
-                margin: 0 0 1ex;
-                padding: 2px 10px 2px 22px;
-                border: 1px solid rgba(0,0,0,0);
-                border-radius: 3px;
-                position: relative;
+            details {
+                padding-left: 1.6em;
             }
-            li > div:hover {
-                background: #F8F8F8;
-                border: 1px solid rgba(0,0,0,0.1);
+            summary {
+                display: list-item;
+                list-style-position: outside;
+                cursor: pointer;
+                margin: 0 0 0 -2em;
             }
-            li > div > a {
+            summary::marker {
+                font-size: 80%;
+                color: #999;
+            }
+            summary > a {
                 display: none;
                 padding: 0 1em;
             }
-            li > div:hover > a {
+            summary:hover > a {
                 display: inline;
             }
-            li .icon {
-                position: absolute;
-                top: .35em;
-                left: .35em;
+            summary .icon {
+                width: 2em;
+                text-align: center;
             }
-
             .succeeded {
                 color: #393;
             }
@@ -52,14 +54,15 @@
             .warning {
                 color: #9c5300;
             }
-
-            li.loading .icon {
+            summary.loading .icon {
                 animation: fa-spin 2s infinite linear;
                 color: #999;
             }
-
-            li.loading .icon:before {
+            summary.loading .icon:before {
                 content: "\f1ce" !important;
+            }
+            .fa-folder-open {
+                color: #ba8d0f;
             }
         </style>
     </head>
@@ -70,21 +73,20 @@
             <br/>
             <div class="errors"></div>
         </div>
+        <br/>
+        <br/>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/11.0.0/markdown-it.min.js"></script>
         <script>
         jQuery(function($) {
 
-
             // The api URL
-            var apiBaseUrl = "https://bulk-data-tester.smarthealthit.org/api/tests";
-            // var apiBaseUrl = "http://0.0.0.0:3002/api/tests";
-
-            var apiVersion = 1.5;
+            // var apiBaseUrl = "https://bulk-data-tester.smarthealthit.org/api/tests";
+            const apiBaseUrl = "http://0.0.0.0:3002/api/tests";
 
             // Test status to icon className map
-            var statusClasses = {
+            const statusClasses = {
                 "succeeded"      : "icon fas fa-check-circle succeeded",
                 "failed"         : "icon fas fa-times-circle failed",
                 "waiting"        : "icon fas fa-circle-notch waiting fa-spin",
@@ -92,152 +94,140 @@
                 "not-supported"  : "icon fas fa-minus-circle not-supported"
             };
 
-            // Reference Bulk Data Server --------------------------------------
-            var REFERENCE_SERVER = {
-                baseURL        : "https://bulk-data.smarthealthit.org/eyJlcnIiOiIiLCJwYWdlIjoxMDAsImR1ciI6MTAsInRsdCI6MTUsIm0iOjF9/fhir",
-                tokenEndpoint  : "https://bulk-data.smarthealthit.org/auth/token",
-                clientId       : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InJlZ2lzdHJhdGlvbi10b2tlbiJ9.eyJqd2tzX3VybCI6Imh0dHBzOi8vYnVsay1kYXRhLXRlc3Rlci5zbWFydGhlYWx0aGl0Lm9yZy9qd2tzIiwiYWNjZXNzVG9rZW5zRXhwaXJlSW4iOjE1LCJpYXQiOjE2MTAzNzkyODl9.YLql1N304s_ACebERRdpcGFhuu1fHWN70XgRtO8lwVk",
+            const SERVER_SETTINGS = {
+                baseURL: "https://bulk-data.smarthealthit.org/eyJlcnIiOiIiLCJwYWdlIjoxMDAwMCwiZHVyIjoxMCwidGx0IjoxNSwibSI6MSwic3R1Ijo0LCJkZWwiOjB9/fhir",
+                groupExportEndpoint: "Group/ff7dc35f-79e9-47a0-af22-475cf301a085/$export",
                 fastestResource: "ImagingStudy",
-                scope          : "system/*.read",
-                authType       : "backend-services",
-                groupId        : "ff7dc35f-79e9-47a0-af22-475cf301a085", // Blue Cross Blue Shield
-                strictSSL      : false,
-                requiresAuth   : false,
-                jwksAuth       : true,
-                jwksUrlAuth    : true,
-                jwks: {
-                    "keys": [
-                        {
-                            "kty": "EC",
-                            "crv": "P-384",
-                            "x": "M1r3GUd0YDpWlqtf4GarOrcwIj2FxCBQfBsxBiKS7fM9ugZURPbjZzb6yl6NJQDL",
-                            "y": "fQeoFopM74V9WIdXGCG_smVnzscxxiW3HMBscwkbRUQIlj2akM36YPxd1vgc9YeI",
-                            "key_ops": ["verify"],
-                            "ext": true,
-                            "kid": "f29397ef446d5c1480adebbcb59910b3",
-                            "alg": "ES384"
-                        },
-                        {
-                            "kty": "EC",
-                            "crv": "P-384",
-                            "d": "L_8hwUylnwhajMPdjvEt15-wFKnWCTBvXmdJnpi92HsxLUXXL3KVbt9UbwEF3vKH",
-                            "x": "M1r3GUd0YDpWlqtf4GarOrcwIj2FxCBQfBsxBiKS7fM9ugZURPbjZzb6yl6NJQDL",
-                            "y": "fQeoFopM74V9WIdXGCG_smVnzscxxiW3HMBscwkbRUQIlj2akM36YPxd1vgc9YeI",
-                            "key_ops": ["sign"],
-                            "ext": true,
-                            "kid": "f29397ef446d5c1480adebbcb59910b3",
-                            "alg": "ES384"
-                        }
-                    ]
+                requests: { strictSSL: false },
+                authentication: {
+                    type: "backend-services",
+                    tokenEndpoint: "https://bulk-data.smarthealthit.org/auth/token",
+                    optional: true,
+                    clientId: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InJlZ2lzdHJhdGlvbi10b2tlbiJ9.eyJqd2tzX3VybCI6Imh0dHBzOi8vYnVsay1kYXRhLnNtYXJ0aGVhbHRoaXQub3JnL2tleXMvRVMzODQucHVibGljLmpzb24iLCJhY2Nlc3NUb2tlbnNFeHBpcmVJbiI6MTUsImlhdCI6MTYyMTU0MDgzOX0.xvJ5mQFciD8KJMje3oggdkCUNIeCezDpBAqUzmnTGGY",
+                    jwksUrl: "https://bulk-data.smarthealthit.org/keys/ES384.public.json",
+                    privateKey: {
+                        "kty": "EC",
+                        "crv": "P-384",
+                        "d": "tb7pcRThbZ8gHMFLZXJLMG48U0euuiPqSHBsOYPR2Bqsdq9rEq4Pi6LiOo890Qm8",
+                        "x": "3K1Lw7Qkjj5LWSk5NnIwWmkb5Yo2GkcwVtnM8xhhGdM0bI3B632QMZmqtRHQ5APJ",
+                        "y": "CBqiq5QwE8EyUxw2_oDJzVHrY5j22ny9KbRCK5vABppaGO4x8MxnTWfQMtGIbVQN",
+                        "key_ops": [ "sign" ],
+                        "ext": true,
+                        "kid": "b37fcf0b5801fde3af48bd55fd95117e",
+                        "alg": "ES384"
+                    }
                 }
             };
 
-            var md = new markdownit();
+            const md = new markdownit();
+
+            let suite;
 
             function renderMd(str) {
                 return md.render(str).replace(/<a\s+href="([^"]*)">/g, '<a target="_blank" href="$1">');
             }
 
+            function getTestNodeAt(path) {
+                return path.split(".").reduce((prev, cur) => prev.children ? prev.children[cur] : prev, suite)
+            }
+
             // Renders an array of test nodes (recursive)
-            function renderGroup(items) {
-                var list = $("<ul>");
-                $.each(items, function(i, item) {
-                    if (+item.version > apiVersion || +item.maxVersion < apiVersion) return;
-                    var li = $('<li>').attr("data-path", item.path);
-                    var div = $("<div/>")
-                        .append('<i class="icon fas fa-flask text-muted"/>')
-                        .append($("<b/>").text(item.name))
-                        .append($('<a href="#"/>').text(item.children ? "Test All" : "Test"));
+            function renderGroup(items, open = false) {
+                return $(items).map((i, item) => {
+                    const details = $("<details/>").attr({"data-path": item.path, open: !!item.children});
+                    const summary = $('<summary/>').appendTo(details);
                     
+                    $('<i class="icon fas ' + (item.children ? 'fa-folder-open' : 'fa-flask text-muted') + '"/>').appendTo(summary)
+                    $('<span/>').text(item.name).appendTo(summary)
+                    $('<a href="#"/>').text(item.children ? "Test All" : "Test").appendTo(summary)
+
                     if (item.description) {
-                        div.append(
-                            $('<div class="small text-muted"/>').html(
+                        details.append(
+                            $('<span class="small text-muted"/>').html(
                                 renderMd(item.description || "*No description provided*")
                             )
                         );
                     }
 
-                    li.append(div);
-                    list.append(li);
                     if (item.children) {
-                        li.append(renderGroup(item.children));
+                        summary.css("fontWeight", "bold")
+                        renderGroup(item.children).each((i, item) => item.appendTo(details));
                     }
-                });
-                return list;
-            }
 
-            function test(path) {
-                return $.ajax({
-                    method: "POST",
-                    url: apiBaseUrl,
-                    timeout: 1000 * 60 * 30, // 30 min
-                    headers: {
-                        "Content-type": "application/json"
-                    },
-                    data: JSON.stringify({
-                        format: "json",
-                        path  : path,
-                        settings: {
-                            version: 1.5,
-                            ...REFERENCE_SERVER,
-                            id: Date.now()
-                        }
-                    })
+                    return details
                 })
             }
 
+            async function test(e) {
+                console.log(e)
+                e.preventDefault();
+                const path = $(e.target).closest("details").attr("data-path");
+                const testNode = getTestNodeAt(path)
+
+                const run = async node => {
+                    if (node.children) {
+                        for (const child of node.children) {
+                            await run(child)
+                        }
+                    } else {
+                        return runTest(node.path);
+                    }
+                };
+
+                return run(testNode);
+            }
+
+            function runTest(path) {
+                const testNode = getTestNodeAt(path)
+                const summary = $('details[data-path="' + path + '"] > summary').addClass("loading");
+                return fetch(apiBaseUrl, {
+                    method: "POST",
+                    headers: { "Content-type": "application/json" },
+                    body: JSON.stringify({
+                        format: "json",
+                        path  : path,
+                        settings: SERVER_SETTINGS
+                    })
+                })
+                .then(res => res.json())
+                .then(handleTestResults, error => {
+                    $('<div class="alert alert-danger alert-dismissible">' +
+                        '<button type="button" class="close" data-dismiss="alert">' +
+                            '<span aria-hidden="true">&times;</span>' +
+                        '</button>' +
+                        error +
+                    '</div>').appendTo(".errors");
+                })
+                .finally(() => summary.removeClass("loading"));
+            }
+
             function handleTestResults(results) {
-                $.each(results, function(i, result) {
-                    var div = $('li[data-path="' + result.path + '"] > div');
-                    div.find(".icon").attr("class", statusClasses[result.status]);
-                    div.find(".add").remove();
+                results.forEach(result => {
+                    const details = $('details[data-path="' + result.path + '"]');
+                    details.find(".icon").attr("class", statusClasses[result.status]);
+                    details.find(".add").remove();
 
                     if (result.error) {
-                        div.append($('<div class="add failed"/>').text(result.error.message));
-
-                        // This is a sample app and as such, it is incomplete. We do not
-                        // render requests and responses, but in case of error we can at least
-                        // render the complete result so that the viewer can hopefully figure
-                        // out what went wrong.
-                        div.append($('<pre class="add small"/>').text(JSON.stringify(result, null, 2)));
+                        details.append($('<pre class="add alert alert-danger small"/>').text(result.error));
+                        
                     }
-
-                    if (result.warnings.length) {
-                        $.each(result.warnings, function(y, w) {
-                            div.append($('<div class="add warning"/>').html(renderMd(w)));
-                        })
+                    if (result.info) {
+                        details.append($('<div class="add alert alert-info small"/>').html(renderMd(result.info)));
                     }
+                    result.warnings.forEach(w => {
+                        details.append($('<div class="add alert alert-warning small"/>').html(renderMd(w.data.join(";"))));
+                    })
                 });
             }
 
             // Load the list of tests and render it
-            $.ajax(apiBaseUrl + "?version=" + apiVersion).then(function(data) {
-                renderGroup(data.children).appendTo("#root");
+            $.ajax(apiBaseUrl).then(data => {
+                suite = data
+                renderGroup(data.children).each((i, item) => item.appendTo("#root"));
             });
 
             // Test/Test All links
-            $("body").on("click", "li > div > a", function(e) {
-                var li = $(e.target).closest("li").addClass("loading");
-                var path = li.attr("data-path");
-                e.preventDefault();
-                test(path).then(
-                    function(results) {
-                        li.removeClass("loading");
-                        return handleTestResults(results)
-                    },
-                    function(xhr) {
-                        li.removeClass("loading");
-                        $(
-                            '<div class="alert alert-danger alert-dismissible">' +
-                                '<button type="button" class="close" data-dismiss="alert">' +
-                                    '<span aria-hidden="true">&times;</span>' +
-                                '</button>' +
-                                xhr.responseText +
-                            '</div>'
-                        ).appendTo(".errors");
-                    }
-                );
-            });
+            $("body").on("click", "summary > a", test);
         });
         </script>
     </body>
